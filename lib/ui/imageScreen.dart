@@ -30,6 +30,7 @@ class ImageScreenState extends State<ImageScreen> {
       if (mounted) {
         setState(() {
           _newPhotoDir = Directory(Constants().waPath);
+          print(_newPhotoDir.path);
         });
       }
     });
@@ -41,15 +42,19 @@ class ImageScreenState extends State<ImageScreen> {
             () {
               return Text(
                 cnst.Constants.isBussiness.value == true
-                    ? "Install WhatsApp Business\n"
-                    : 'Install WhatsApp\n',
+                    ? "Install WhatsApp Business and view an image status \n"
+                    : 'Install WhatsApp and view an image status\n',
+                textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 18.0),
               );
             },
           ),
-          const Text(
-            "Your Friend's Status Will Be Available Here",
-            style: TextStyle(fontSize: 18.0),
+          GestureDetector(
+            onTap: () {},
+            child: const Text(
+              "Your Friend's Status Will Be Available Here",
+              style: TextStyle(fontSize: 18.0),
+            ),
           ),
         ],
       );
@@ -78,6 +83,8 @@ class ImageScreenState extends State<ImageScreen> {
                           MaterialPageRoute(
                             builder: (context) => ViewPhotos(
                               imgPath: imgPath,
+                              images: imageList,
+                              index: index,
                             ),
                           ),
                         ).then((onValue) {

@@ -89,6 +89,8 @@ class _SavedmediaState extends State<Savedmedia> {
                             builder: (context) => PlayStatus(
                               videoFile: imgPath,
                               saved: true,
+                              images: bothList,
+                              index: index,
                             ),
                           )).then((onValue) {
                         setState(() {});
@@ -157,6 +159,8 @@ class _SavedmediaState extends State<Savedmedia> {
                               builder: (context) => ViewPhotos(
                                 imgPath: imgPath,
                                 saved: true,
+                                images: imageList,
+                                index: index,
                               ),
                             ),
                           ).then((onValue) {

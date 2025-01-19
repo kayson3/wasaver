@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 import 'package:speed_dial_fab/speed_dial_fab.dart';
@@ -13,16 +14,22 @@ import 'video_controller.dart';
 class PlayStatus extends StatefulWidget {
   final String videoFile;
   bool saved;
+  final List images;
+  final int index;
   PlayStatus({
     super.key,
     required this.videoFile,
     this.saved = false,
+    required this.images,
+    required this.index,
   });
   @override
   _PlayStatusState createState() => _PlayStatusState();
 }
 
 class _PlayStatusState extends State<PlayStatus> {
+  int currentindex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -51,44 +58,47 @@ class _PlayStatusState extends State<PlayStatus> {
           });
     } else {
       Navigator.pop(context);
-      showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SimpleDialog(
-                children: <Widget>[
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        children: <Widget>[
-                          const Text(
-                            'Saved in Gallary',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(10.0),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(10.0),
-                          ),
-                          MaterialButton(
-                            color: Colors.brown.shade700,
-                            textColor: Colors.white,
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          });
+      Get.snackbar('Success', 'Saved in Gallary!!',
+          backgroundColor: Colors.white, icon: const Icon(Icons.sd_card));
+      return;
+      // showDialog(
+      //     context: context,
+      //     barrierDismissible: false,
+      //     builder: (BuildContext context) {
+      //       return Padding(
+      //         padding: const EdgeInsets.all(8.0),
+      //         child: SimpleDialog(
+      //           children: <Widget>[
+      //             Center(
+      //               child: Container(
+      //                 padding: const EdgeInsets.all(15.0),
+      //                 child: Column(
+      //                   children: <Widget>[
+      //                     const Text(
+      //                       'Saved in Gallary',
+      //                       style: TextStyle(
+      //                           fontSize: 20, fontWeight: FontWeight.bold),
+      //                     ),
+      //                     const Padding(
+      //                       padding: EdgeInsets.all(10.0),
+      //                     ),
+      //                     const Padding(
+      //                       padding: EdgeInsets.all(10.0),
+      //                     ),
+      //                     MaterialButton(
+      //                       color: Colors.brown.shade700,
+      //                       textColor: Colors.white,
+      //                       onPressed: () => Navigator.pop(context),
+      //                       child: const Text('Close'),
+      //                     )
+      //                   ],
+      //                 ),
+      //               ),
+      //             ),
+      //           ],
+      //         ),
+      //       );
+      //     });
     }
   }
 
@@ -102,6 +112,7 @@ class _PlayStatusState extends State<PlayStatus> {
 
   @override
   Widget build(BuildContext context) {
+    currentindex = widget.index;
     _fabMiniMenuItemList = [
       if (!widget.saved) Icons.sd_card,
       Icons.share,
@@ -123,22 +134,29 @@ class _PlayStatusState extends State<PlayStatus> {
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        body: StatusVideo(
-          videoPlayerController:
-              VideoPlayerController.file(File(widget.videoFile)),
-          looping: true,
-          videoSrc: widget.videoFile,
-        ),
+        body: PageView(
+            controller: PageController(initialPage: currentindex),
+            onPageChanged: (v) {
+              currentindex = v;
+            },
+            children: widget.images.map((v) {
+              return StatusVideo(
+                videoPlayerController: VideoPlayerController.file(File(v)),
+                looping: false,
+                videoSrc: v,
+                // aspectRatio: 0.3,
+              );
+            }).toList()),
         // ),
         floatingActionButton: SpeedDialFabWidget(
           secondaryIconsList: _fabMiniMenuItemList,
-          secondaryIconsText: [
-            if (!widget.saved) "Save",
-            "Share",
-            // "Repost",
-            // "Set As",
-            "Delete",
-          ],
+          // secondaryIconsText: const [
+          //   // if (!widget.saved) "Save",
+          //   // "Share",
+          //   // // "Repost",
+          //   // // "Set As",
+          //   // "Delete",
+          // ],
           secondaryIconsOnPress: [
             if (!widget.saved)
               () async {
@@ -154,7 +172,8 @@ class _PlayStatusState extends State<PlayStatus> {
                   // Destination file path in the app's documents directory
                   String destinationFilePath = '$appDocPath/VIDEO-$curDate.mp4';
 
-                  await File(widget.videoFile).copy(destinationFilePath);
+                  await File(widget.images[currentindex])
+                      .copy(destinationFilePath);
                   if (kDebugMode) {
                     print('File copied successfully.');
                   }
@@ -179,13 +198,14 @@ class _PlayStatusState extends State<PlayStatus> {
             () async {
               // print(widget.imgPath);
 
-              await Share.shareFiles([widget.videoFile], text: 'Great picture');
+              await Share.shareFiles([widget.images[currentindex]],
+                  text: 'Great picture');
               return;
             },
             // () => {},
             // () => {},
             () async {
-              final file = File(widget.videoFile);
+              final file = File(widget.images[currentindex]);
               try {
                 await file.delete().then((onValue) {
                   Navigator.of(context).pop();

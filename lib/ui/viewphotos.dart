@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
@@ -11,10 +12,14 @@ import 'package:speed_dial_fab/speed_dial_fab.dart';
 class ViewPhotos extends StatefulWidget {
   final String imgPath;
   final bool saved;
+  final List images;
+  final int index;
   const ViewPhotos({
     super.key,
     required this.imgPath,
     this.saved = false,
+    required this.images,
+    required this.index,
   });
 
   @override
@@ -23,7 +28,7 @@ class ViewPhotos extends StatefulWidget {
 
 class _ViewPhotosState extends State<ViewPhotos> {
   var filePath;
-  // final String imgShare = 'Image.file(File(widget.imgPath),)';
+  int currentindex = 0;
 
   final LinearGradient backgroundGradient = const LinearGradient(
     colors: [
@@ -60,59 +65,62 @@ class _ViewPhotosState extends State<ViewPhotos> {
           });
     } else {
       Navigator.pop(context);
-      showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SimpleDialog(
-                children: <Widget>[
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        children: <Widget>[
-                          const Text(
-                            'Saved in Gallary',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(10.0),
-                          ),
-                          // Text(str,
-                          //     style: const TextStyle(
-                          //       fontSize: 16.0,
-                          //     )),
-                          // const Padding(
-                          //   padding: EdgeInsets.all(10.0),
-                          // ),
-                          // Text('FileManager > wa_status_saver',
-                          //     style: TextStyle(
-                          //         fontSize: 16.0, color: Colors.brown[700])),
-                          // const Padding(
-                          //   padding: EdgeInsets.all(10.0),
-                          // ),
-                          MaterialButton(
-                            color: Colors.brown.shade700,
-                            textColor: Colors.white,
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          });
+      Get.snackbar('Success', 'Saved in Gallary!!',
+          backgroundColor: Colors.white, icon: const Icon(Icons.sd_card));
+      // showDialog(
+      //     context: context,
+      //     barrierDismissible: false,
+      //     builder: (BuildContext context) {
+      //       return Padding(
+      //         padding: const EdgeInsets.all(8.0),
+      //         child: SimpleDialog(
+      //           children: <Widget>[
+      //             Center(
+      //               child: Container(
+      //                 padding: const EdgeInsets.all(15.0),
+      //                 child: Column(
+      //                   children: <Widget>[
+      //                     const Text(
+      //                       'Saved in Gallary',
+      //                       style: TextStyle(
+      //                           fontSize: 20, fontWeight: FontWeight.bold),
+      //                     ),
+      //                     const Padding(
+      //                       padding: EdgeInsets.all(10.0),
+      //                     ),
+      //                     // Text(str,
+      //                     //     style: const TextStyle(
+      //                     //       fontSize: 16.0,
+      //                     //     )),
+      //                     // const Padding(
+      //                     //   padding: EdgeInsets.all(10.0),
+      //                     // ),
+      //                     // Text('FileManager > wa_status_saver',
+      //                     //     style: TextStyle(
+      //                     //         fontSize: 16.0, color: Colors.brown[700])),
+      //                     // const Padding(
+      //                     //   padding: EdgeInsets.all(10.0),
+      //                     // ),
+      //                     MaterialButton(
+      //                       color: Colors.brown.shade700,
+      //                       textColor: Colors.white,
+      //                       onPressed: () => Navigator.pop(context),
+      //                       child: const Text('Close'),
+      //                     )
+      //                   ],
+      //                 ),
+      //               ),
+      //             ),
+      //           ],
+      //         ),
+      //       );
+      //     });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    currentindex = widget.index;
     _fabMiniMenuItemList = [
       if (!widget.saved) Icons.sd_card,
       Icons.share,
@@ -133,28 +141,36 @@ class _ViewPhotosState extends State<ViewPhotos> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Center(
-        child: Image.file(
-          File(widget.imgPath),
-          fit: BoxFit.cover,
-        ),
+      body: PageView(
+        controller: PageController(initialPage: widget.index),
+        onPageChanged: (v) {
+          currentindex = v;
+        },
+        children: widget.images.map((v) {
+          return Center(
+            child: Image.file(
+              File(v),
+              fit: BoxFit.cover,
+            ),
+          );
+        }).toList(),
       ),
       floatingActionButton: SpeedDialFabWidget(
         secondaryIconsList: _fabMiniMenuItemList,
-        secondaryIconsText: [
-          if (!widget.saved) "Save",
+        // secondaryIconsText: [
+        //   if (!widget.saved) "",
 
-          "Share",
-          // "Repost",
-          // "Set As",
-          "Delete",
-        ],
+        //   "",
+        //   // "Repost",
+        //   // "Set As",
+        //   "",
+        // ],
         secondaryIconsOnPress: [
           if (!widget.saved)
             () async {
               // _onLoading(true, '');
 
-              // final myUri = Uri.parse(widget.imgPath);
+              // final myUri = Uri.parse(widget.images[currentindex]);
               // final originalImageFile = File.fromUri(myUri);
               // late Uint8List bytes;
               // await originalImageFile.readAsBytes().then((value) {
@@ -180,7 +196,8 @@ class _ViewPhotosState extends State<ViewPhotos> {
                 // final path = directory.path;
                 final curDate = DateTime.now().toString();
                 String destinationFilePath = '$appDocPath/VIDEO-$curDate.png';
-                await File(widget.imgPath).copy(destinationFilePath);
+                await File(widget.images[currentindex])
+                    .copy(destinationFilePath);
                 _onLoading(
                   false,
                   'Image Saved',
@@ -190,15 +207,16 @@ class _ViewPhotosState extends State<ViewPhotos> {
               }
             },
           () async {
-            // print(widget.imgPath);
+            // print(widget.images[currentindex]);
 
-            await Share.shareFiles([widget.imgPath], text: 'Great picture');
+            await Share.shareFiles([widget.images[currentindex]],
+                text: 'Great picture');
             return;
           },
           // () => {},
           // () => {},
           () async {
-            final file = File(widget.imgPath);
+            final file = File(widget.images[currentindex]);
             try {
               await file.delete().then((onValue) {
                 Navigator.of(context).pop();

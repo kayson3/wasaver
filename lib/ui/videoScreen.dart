@@ -39,8 +39,9 @@ class VideoScreenState extends State<VideoScreen> {
           Obx(
             () => Text(
               cnst.Constants.isBussiness.value == true
-                  ? "Install WhatsApp Business\n"
-                  : 'Install WhatsApp\n',
+                  ? "Install WhatsApp Business and watch a video status\n"
+                  : 'Install WhatsAppand view and watch a video status\n',
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18.0),
             ),
           ),
@@ -98,6 +99,8 @@ class _VideoGridState extends State<VideoGrid> {
                   MaterialPageRoute(
                     builder: (context) => PlayStatus(
                       videoFile: videoList[index],
+                      images: videoList,
+                      index: index,
                     ),
                   ),
                 ),

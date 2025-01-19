@@ -4,14 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wastatussaver/constants.dart' as q;
+import 'package:wastatussaver/ui/homepage.dart';
 
-import 'ui/homepage.dart';
+// import 'ui/homepage.dart';
 // import 'package:flutter_html/flutter_html.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+  await q.Constants.getAndroidVersion();
   runApp(
     const MyApp(),
   );
